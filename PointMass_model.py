@@ -1,16 +1,17 @@
 import crocoddyl
 import numpy as np
-from PointMass_utils import cost_residuals
+from PointMass_utils import Costs
 
 class DifferentialActionModelPointMass(crocoddyl.DifferentialActionModelAbstract):
-    def __init__(self, w):
+    def __init__(self, cost_model, w):
         crocoddyl.DifferentialActionModelAbstract.__init__(
-            self, crocoddyl.StateVector(4), nu = 2, nr = 2
+            self, crocoddyl.StateVector(4), nu = 2, nr = cost_model.nr
         )  
         # nu = 2 {Fx, Fy} 
         # nr = 2 {Trans, Obs}
         self.unone = np.zeros(self.nu)
         self.m = 1.0 # Dynamics (so to say !!)
+        self.cost_model = cost_model
         self.costWeights = w.copy()
 
     def calc(self, data, x, u=None):
@@ -28,6 +29,5 @@ class DifferentialActionModelPointMass(crocoddyl.DifferentialActionModelAbstract
         Xddot = fx / m
         Yddot = fy / m
         data.xout = np.matrix([Xddot, Yddot]).T
-
-        data.r = cost_residuals(x, u) # {Trans, Obs}
+        data.r = self.cost_model.residuals(x, u) 
         data.cost = 0.5 * np.sum(self.costWeights * np.asarray(data.r) ** 2)
