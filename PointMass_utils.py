@@ -58,7 +58,6 @@ class Costs():
     def add_cost(self, cost_model):
         self.nr += 1
         self.costs.append(cost_model)
-        # self.w.append(w)
 
     def residuals(self, X, U):
         self.r = np.zeros(self.nr)
@@ -91,9 +90,9 @@ def animatePointMass(xs, obstacles, target, sleep=50, show=False):
     patch = plt.Circle((0, 0), radius=0.2, fc="b")
     obs_set = []
     for obs in obstacles:
-        obs_set.append(plt.Circle((obs.x, obs.y), radius=obs.R, fc="k"))
+        obs_set.append(plt.Circle((obs.x, obs.y), radius=obs.R, fc="k", alpha=0.5))
 
-    goal = plt.Rectangle((target[0]-0.5,target[1]-0.5),1,1,fc="g") 
+    goal = plt.Rectangle((target[0]-0.5,target[1]-0.5),1,1,fc="g", alpha=0.7) 
     time_text = ax.text(0.02, 0.95, "", transform=ax.transAxes)
 
     def init():
@@ -124,11 +123,11 @@ def animatePointMass(xs, obstacles, target, sleep=50, show=False):
 def plot_results(x_opt, x_nopt, x_irl, obstacles, target):
     fig = plt.figure()
     ax = plt.axes(xlim=(-2, 12), ylim=(-2, 12))
-    goal = plt.Rectangle((target[0]-0.5,target[1]-0.5),1,1,fc="g") 
+    goal = plt.Rectangle((target[0]-0.5,target[1]-0.5),1,1,fc="g", alpha=0.7) 
     time_text = ax.text(0.02, 0.95, "", transform=ax.transAxes)
     ax.add_patch(goal)
     for obs in obstacles:
-        ax.add_patch(plt.Circle((obs.x, obs.y), radius=obs.R, fc="k"))
+        ax.add_patch(plt.Circle((obs.x, obs.y), radius=obs.R, fc="k", alpha=0.5))
     ax.set_aspect('equal', adjustable='box')
     time_text.set_text("")
     plt.plot(x_opt[:,0],x_opt[:,1], 'k:', label='Optimal')
@@ -136,5 +135,42 @@ def plot_results(x_opt, x_nopt, x_irl, obstacles, target):
         plt.plot(x[:,0],x[:,1], 'r:', label='_nolegend_')
     plt.plot(x_nopt[-1][:,0],x_nopt[-1][:,1], 'r:', label='Non-Optimal')
     plt.plot(x_irl[:,0], x_irl[:,1], 'b-', label='IRL')
+    plt.legend()
+    plt.show()
+
+def plot_1_traj(x, obstacles, target, label='', linemap = 'k:'):
+    fig = plt.figure()
+    ax = plt.axes(xlim=(-2, 12), ylim=(-2, 12))
+    goal = plt.Rectangle((target[0]-0.5,target[1]-0.5),1,1,fc="g", alpha=0.7) 
+    time_text = ax.text(0.02, 0.95, "", transform=ax.transAxes)
+    ax.add_patch(goal)
+    if len(obstacles) ==1:
+        ax.add_patch(plt.Circle((obstacles[0].x, obstacles[0].y), radius=obstacles[0].R, fc="k", alpha=0.5))
+    else:
+        for obs in obstacles:
+            ax.add_patch(plt.Circle((obs.x, obs.y), radius=obs.R, fc="k", alpha=0.5))
+    ax.set_aspect('equal', adjustable='box')
+    time_text.set_text("")
+    plt.plot(x[:,0],x[:,1], linemap, label=label)
+    plt.legend()
+    plt.show()
+
+def plot_1_set(x, obstacles, target, label='', linemap_traj = 'b', linemap_set='r:'):
+    fig = plt.figure()
+    ax = plt.axes(xlim=(-2, 12), ylim=(-2, 12))
+    goal = plt.Rectangle((target[0]-0.5,target[1]-0.5),1,1,fc="g", alpha=0.7) 
+    time_text = ax.text(0.02, 0.95, "", transform=ax.transAxes)
+    ax.add_patch(goal)
+    if len(obstacles) ==1:
+        ax.add_patch(plt.Circle((obstacles[0].x, obstacles[0].y), radius=obstacles[0].R, fc="k", alpha=0.5))
+    else:
+        for obs in obstacles:
+            ax.add_patch(plt.Circle((obs.x, obs.y), radius=obs.R, fc="k", alpha=0.5))
+    ax.set_aspect('equal', adjustable='box')
+    time_text.set_text("")
+    x_traj = x[0]
+    plt.plot(x_traj[:,0],x_traj[:,1], linemap_traj, label=label)
+    for x_set in x[1:]:
+        plt.plot(x_set[:,0],x_set[:,1], linemap_set, label='_nolegend_')
     plt.legend()
     plt.show()
