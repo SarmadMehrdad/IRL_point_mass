@@ -7,12 +7,13 @@ from matplotlib import animation
 from matplotlib import pyplot as plt
 
 class Obstacle():
-    def __init__(self, x, y, R):
+    def __init__(self, x, y, R, name):
         self.d = 0
         self.c = np.array([x, y])
         self.x = x
         self.y = y
         self.R = R
+        self.name = name
 
     def residual(self, X, U):
         self.d = np.linalg.norm(self.c - np.array([X[0], X[1]])) - self.R
@@ -20,10 +21,11 @@ class Obstacle():
         return self.r
 
 class XReg():
-    def __init__(self, nx, ref):
+    def __init__(self, nx, ref, name):
         self.nx = nx
         self.act = ref
         self.r = np.zeros(self.nx)
+        self.name = name
 
     def residual(self, X, U):
         if self.act is None:
@@ -33,10 +35,11 @@ class XReg():
         return self.r
 
 class UReg():
-    def __init__(self, nu, ref):
+    def __init__(self, nu, ref, name):
         self.nu = nu
         self.act = ref
         self.r = 0
+        self.name = name
 
     def residual(self, X, U):
         if U is None:
@@ -54,10 +57,12 @@ class Costs():
         self.w = []
         self.d = []
         self.r = []
+        self.names = []
 
     def add_cost(self, cost_model):
         self.nr += 1
         self.costs.append(cost_model)
+        self.names.append(cost_model.name)
 
     def residuals(self, X, U):
         self.r = np.zeros(self.nr)
