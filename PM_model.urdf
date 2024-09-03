@@ -1,0 +1,50 @@
+<?xml version="1.0" ?>
+ <robot name="pointmass" xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <!-- World Link -->
+    <link name="world"/>
+    <link name="x_axis">
+        <inertial>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <mass value="0"/>
+            <inertia ixx="0.00001" ixy="0" ixz="0" iyy="0.00001" iyz="0" izz="0.00001"/>
+        </inertial>
+    </link>
+    <link name="y_axis">
+        <inertial>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <mass value="0"/>
+            <inertia ixx="0.00001" ixy="0" ixz="0" iyy="0.00001" iyz="0" izz="0.00001"/>
+        </inertial>
+    </link>
+    <!-- Point Mass Link -->
+    <link name="point_mass">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <mass value="1"/>
+      <inertia ixx="0.004" ixy="0" ixz="0" iyy="0.004" iyz="0" izz="0.004"/>
+    </inertial>
+        <geometry>
+            <sphere radius="0.1"/>
+        </geometry>
+    </link>
+  <!-- joint between WORLD and BASE -->
+    <joint name="X" type="prismatic">
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <axis xyz="1 0 0"/>
+        <limit effort="320" lower="-3" upper="3" velocity="50"/>
+        <parent link="world"/>
+        <child link="x_axis"/>
+    </joint>
+    <joint name="Y" type="prismatic">
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <axis xyz="0 1 0"/>
+        <limit effort="320" lower="-3" upper="3" velocity="50"/>
+        <parent link="x_axis"/>
+        <child link="y_axis"/>
+    </joint>
+    <joint name="point_mass" type="fixed">
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <parent link="y_axis"/>
+        <child link="point_mass"/>
+    </joint>
+</robot>
