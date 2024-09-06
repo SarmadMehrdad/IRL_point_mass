@@ -31,3 +31,4 @@ class DifferentialActionModelPointMass(crocoddyl.DifferentialActionModelAbstract
         data.xout = np.matrix([Xddot, Yddot]).T
         data.r = self.cost_model.residuals(x, u) 
         data.cost = 0.5 * np.sum(self.costWeights * np.asarray(data.r) ** 2)
+        # data.cost = np.sum(self.costWeights * np.asarray(data.r))

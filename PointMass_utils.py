@@ -7,47 +7,67 @@ from matplotlib import animation
 from matplotlib import pyplot as plt
 
 class Obstacle():
-    def __init__(self, x, y, R, name):
-        self.d = 0
+    def __init__(self, x, y, R, act, name):
+        self.d = 0.0
+        self.act = act
         self.c = np.array([x, y])
         self.x = x
         self.y = y
+        self.r = 0.0
         self.R = R
         self.name = name
 
     def residual(self, X, U):
         self.d = np.linalg.norm(self.c - np.array([X[0], X[1]])) - self.R
-        self.r = np.exp(-self.d)
+        if self.d > self.act:
+            self.r = 0.0
+        else:
+            self.r = np.linalg.norm(self.d - self.act)
+            # self.r = np.exp(-self.d) # Exponential Weighting for Obstacle
+        return self.r
+
+class QReg():
+    def __init__(self, nq, ref, name):
+        self.nq = nq
+        self.ref = ref
+        self.r = 0.0
+        self.name = name
+
+    def residual(self, X, U):
+        if self.ref is None:
+            self.r = np.linalg.norm(X[:self.nq])
+        else:
+            self.r = np.linalg.norm(X[:self.nq] - self.ref)
         return self.r
 
 class XReg():
     def __init__(self, nx, ref, name):
         self.nx = nx
-        self.act = ref
-        self.r = np.zeros(self.nx)
+        self.ref = ref
+        self.r = 0.0
         self.name = name
 
     def residual(self, X, U):
-        if self.act is None:
+        if self.ref is None:
             self.r = np.linalg.norm(X)
         else:
-            self.r = np.linalg.norm(X - self.act)
+            self.r = np.linalg.norm(X - self.ref)
         return self.r
 
 class UReg():
     def __init__(self, nu, ref, name):
         self.nu = nu
-        self.act = ref
+        self.ref = ref
         self.r = 0
         self.name = name
 
     def residual(self, X, U):
         if U is None:
             U = np.zeros(self.nu)
-        if self.act is None:
+        if self.ref is None:
             self.r = np.linalg.norm(U)
         else:
-            self.r = np.linalg.norm(U - self.act)
+            self.r = np.linalg.norm(U - self.ref)
         return self.r
 
 class Costs():
@@ -56,7 +76,7 @@ class Costs():
         self.costs = []
         self.w = []
         self.d = []
-        self.r = []
+        self.r = None
         self.names = []
 
     def add_cost(self, cost_model):
@@ -80,8 +100,8 @@ class Costs():
     def traj_cost(self, x, u, w_run, w_term, dt):
         cost = 0
         for X, U in zip(x[:-1],u):
-            cost += np.sum(w_run*self.residuals(X,U))*dt
-        cost += np.sum(w_term*self.residuals(x[-1],None))
+            cost += 0.5*np.sum(w_run*(self.residuals(X,U)**2))*dt
+        cost += 0.5*np.sum(w_term*(self.residuals(x[-1],None)**2))
         return cost
 
 def normalize(x):
@@ -135,10 +155,10 @@ def plot_results(x_opt, x_nopt, x_irl, obstacles, target):
         ax.add_patch(plt.Circle((obs.x, obs.y), radius=obs.R, fc="k", alpha=0.5))
     ax.set_aspect('equal', adjustable='box')
     time_text.set_text("")
-    plt.plot(x_opt[:,0],x_opt[:,1], 'k:', label='Optimal')
     for x in x_nopt[:-1]:
         plt.plot(x[:,0],x[:,1], 'r:', label='_nolegend_')
     plt.plot(x_nopt[-1][:,0],x_nopt[-1][:,1], 'r:', label='Non-Optimal')
+    plt.plot(x_opt[:,0],x_opt[:,1], 'g:', label='Optimal')
     plt.plot(x_irl[:,0], x_irl[:,1], 'b-', label='IRL')
     plt.legend()
     plt.show()
@@ -179,3 +199,18 @@ def plot_1_set(x, obstacles, target, label='', linemap_traj = 'b', linemap_set='
         plt.plot(x_set[:,0],x_set[:,1], linemap_set, label='_nolegend_')
     plt.legend()
     plt.show()
+
+def distributions(cost_set, xs_optimal, us_optimal, xs_non_optimal_set, us_non_optimal_set, w_run, w_term, dt):
+    P = np.zeros(len(xs_non_optimal_set)+1)
+    costs = np.zeros(len(xs_non_optimal_set)+1)
+    costs[0] = cost_set.traj_cost(xs_optimal, us_optimal, w_run, w_term, dt)
+    for i, (X,U) in enumerate(zip(xs_non_optimal_set, us_non_optimal_set)):
+        costs[i+1] = cost_set.traj_cost(X, U, w_run, w_term, dt)
+    den = 0.0
+    for i, cost in enumerate(costs):
+        P[i] = np.exp(-cost)
+        den += P[i]
+    
+    P /= den
+    return P
+
