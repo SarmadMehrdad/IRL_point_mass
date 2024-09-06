@@ -200,6 +200,26 @@ def plot_1_set(x, obstacles, target, label='', linemap_traj = 'b', linemap_set='
     plt.legend()
     plt.show()
 
+def plot_1_multiset(x, x_set, obstacles, target, label='', linemap_traj = 'g:', linemap_set='r:'):
+    fig = plt.figure()
+    ax = plt.axes(xlim=(-2, 12), ylim=(-2, 12))
+    goal = plt.Rectangle((target[0]-0.5,target[1]-0.5),1,1,fc="g", alpha=0.7) 
+    time_text = ax.text(0.02, 0.95, "", transform=ax.transAxes)
+    ax.add_patch(goal)
+    if len(obstacles) ==1:
+        ax.add_patch(plt.Circle((obstacles[0].x, obstacles[0].y), radius=obstacles[0].R, fc="k", alpha=0.5))
+    else:
+        for obs in obstacles:
+            ax.add_patch(plt.Circle((obs.x, obs.y), radius=obs.R, fc="k", alpha=0.5))
+    ax.set_aspect('equal', adjustable='box')
+    time_text.set_text("")
+    for i, X in enumerate(x):
+        plt.plot(X[:,0],X[:,1], linemap_traj, label=label)
+        for Xs in x_set[i]:
+            plt.plot(Xs[:,0],Xs[:,1], linemap_set, label='_nolegend_')
+    plt.legend()
+    plt.show()
+
 def distributions(cost_set, xs_optimal, us_optimal, xs_non_optimal_set, us_non_optimal_set, w_run, w_term, dt):
     P = np.zeros(len(xs_non_optimal_set)+1)
     costs = np.zeros(len(xs_non_optimal_set)+1)
