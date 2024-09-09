@@ -156,16 +156,16 @@ def plot_results(x_opt, x_nopt, x_irl, obstacles, target):
     ax.set_aspect('equal', adjustable='box')
     time_text.set_text("")
     for x in x_nopt[:-1]:
-        plt.plot(x[:,0],x[:,1], 'r:', label='_nolegend_')
-    plt.plot(x_nopt[-1][:,0],x_nopt[-1][:,1], 'r:', label='Non-Optimal')
-    plt.plot(x_opt[:,0],x_opt[:,1], 'g:', label='Optimal')
+        plt.plot(x[:,0],x[:,1], 'r', alpha=0.2, label='_nolegend_')
+    plt.plot(x_nopt[-1][:,0],x_nopt[-1][:,1], 'r', alpha=0.3, label='Non-Optimal')
+    plt.plot(x_opt[:,0],x_opt[:,1], 'g', label='Optimal')
     plt.plot(x_irl[:,0], x_irl[:,1], 'b-', label='IRL')
     plt.legend()
     plt.show()
 
 def plot_1_traj(x, obstacles, target, label='', linemap = 'k:'):
     fig = plt.figure()
-    ax = plt.axes(xlim=(-2, 12), ylim=(-2, 12))
+    ax = plt.axes(xlim=(-2, 15), ylim=(-2, 15))
     goal = plt.Rectangle((target[0]-0.5,target[1]-0.5),1,1,fc="g", alpha=0.7) 
     time_text = ax.text(0.02, 0.95, "", transform=ax.transAxes)
     ax.add_patch(goal)
@@ -182,7 +182,7 @@ def plot_1_traj(x, obstacles, target, label='', linemap = 'k:'):
 
 def plot_1_set(x, obstacles, target, label='', linemap_traj = 'b', linemap_set='r:'):
     fig = plt.figure()
-    ax = plt.axes(xlim=(-2, 12), ylim=(-2, 12))
+    ax = plt.axes(xlim=(-2, 15), ylim=(-2, 15))
     goal = plt.Rectangle((target[0]-0.5,target[1]-0.5),1,1,fc="g", alpha=0.7) 
     time_text = ax.text(0.02, 0.95, "", transform=ax.transAxes)
     ax.add_patch(goal)
@@ -202,7 +202,7 @@ def plot_1_set(x, obstacles, target, label='', linemap_traj = 'b', linemap_set='
 
 def plot_1_multiset(x, x_set, obstacles, target, label='', linemap_traj = 'g:', linemap_set='r:'):
     fig = plt.figure()
-    ax = plt.axes(xlim=(-2, 12), ylim=(-2, 12))
+    ax = plt.axes(xlim=(-2, 15), ylim=(-2, 15))
     goal = plt.Rectangle((target[0]-0.5,target[1]-0.5),1,1,fc="g", alpha=0.7) 
     time_text = ax.text(0.02, 0.95, "", transform=ax.transAxes)
     ax.add_patch(goal)
