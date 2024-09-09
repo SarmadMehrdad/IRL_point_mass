@@ -147,7 +147,7 @@ def animatePointMass(xs, obstacles, target, sleep=50, show=False):
 
 def plot_results(x_opt, x_nopt, x_irl, obstacles, target):
     fig = plt.figure()
-    ax = plt.axes(xlim=(-2, 12), ylim=(-2, 12))
+    ax = plt.axes(xlim=(-2, 15), ylim=(-2, 15))
     goal = plt.Rectangle((target[0]-0.5,target[1]-0.5),1,1,fc="g", alpha=0.7) 
     time_text = ax.text(0.02, 0.95, "", transform=ax.transAxes)
     ax.add_patch(goal)
@@ -220,12 +220,11 @@ def plot_1_multiset(x, x_set, obstacles, target, label='', linemap_traj = 'g:', 
     plt.legend()
     plt.show()
 
-def distributions(cost_set, xs_optimal, us_optimal, xs_non_optimal_set, us_non_optimal_set, w_run, w_term, dt):
-    P = np.zeros(len(xs_non_optimal_set)+1)
-    costs = np.zeros(len(xs_non_optimal_set)+1)
-    costs[0] = cost_set.traj_cost(xs_optimal, us_optimal, w_run, w_term, dt)
-    for i, (X,U) in enumerate(zip(xs_non_optimal_set, us_non_optimal_set)):
-        costs[i+1] = cost_set.traj_cost(X, U, w_run, w_term, dt)
+def distributions(cost_set, x_set, u_set, w_run, w_term, dt):
+    P = np.zeros(len(x_set))
+    costs = np.zeros(len(u_set))
+    for i, (X,U) in enumerate(zip(x_set, u_set)):
+        costs[i] = cost_set.traj_cost(X, U, w_run, w_term, dt)
     den = 0.0
     for i, cost in enumerate(costs):
         P[i] = np.exp(-cost)
