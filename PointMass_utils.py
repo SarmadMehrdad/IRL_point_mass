@@ -114,8 +114,13 @@ def animatePointMass(xs, obstacles, target, sleep=50, show=False):
     ax = plt.axes(xlim=(-2, 12), ylim=(-2, 12))
     patch = plt.Circle((0, 0), radius=0.2, fc="b")
     obs_set = []
-    for obs in obstacles:
-        obs_set.append(plt.Circle((obs.x, obs.y), radius=obs.R, fc="k", alpha=0.5))
+    if len(obstacles) ==1:
+        ax.add_patch(plt.Circle((obstacles[0].x, obstacles[0].y), radius=obstacles[0].R, fc="k", alpha=0.5))
+        ax.text(obstacles[0].x, obstacles[0].y, "1",bbox={"boxstyle" : "circle", "color":"grey"},ha="center",va="center")
+    else:
+        for i, obs in enumerate(obstacles):
+            ax.add_patch(plt.Circle((obs.x, obs.y), radius=obs.R, fc="k", alpha=0.5))
+            ax.text(obs.x, obs.y, str(i+1),bbox={"boxstyle" : "circle", "color":"grey"},ha="center",va="center")
 
     goal = plt.Rectangle((target[0]-0.5,target[1]-0.5),1,1,fc="g", alpha=0.7) 
     time_text = ax.text(0.02, 0.95, "", transform=ax.transAxes)
@@ -151,8 +156,13 @@ def plot_results(x_opt, x_nopt, x_irl, obstacles, target):
     goal = plt.Rectangle((target[0]-0.5,target[1]-0.5),1,1,fc="g", alpha=0.7) 
     time_text = ax.text(0.02, 0.95, "", transform=ax.transAxes)
     ax.add_patch(goal)
-    for obs in obstacles:
-        ax.add_patch(plt.Circle((obs.x, obs.y), radius=obs.R, fc="k", alpha=0.5))
+    if len(obstacles) ==1:
+        ax.add_patch(plt.Circle((obstacles[0].x, obstacles[0].y), radius=obstacles[0].R, fc="k", alpha=0.5))
+        ax.text(obstacles[0].x, obstacles[0].y, "1",bbox={"boxstyle" : "circle", "color":"grey"},ha="center",va="center")
+    else:
+        for i, obs in enumerate(obstacles):
+            ax.add_patch(plt.Circle((obs.x, obs.y), radius=obs.R, fc="k", alpha=0.5))
+            ax.text(obs.x, obs.y, str(i+1),bbox={"boxstyle" : "circle", "color":"grey"},ha="center",va="center")
     ax.set_aspect('equal', adjustable='box')
     time_text.set_text("")
     for x in x_nopt[:-1]:
@@ -171,9 +181,11 @@ def plot_1_traj(x, obstacles, target, label='', linemap = 'k:'):
     ax.add_patch(goal)
     if len(obstacles) ==1:
         ax.add_patch(plt.Circle((obstacles[0].x, obstacles[0].y), radius=obstacles[0].R, fc="k", alpha=0.5))
+        ax.text(obstacles[0].x, obstacles[0].y, "1",bbox={"boxstyle" : "circle", "color":"grey"},ha="center",va="center")
     else:
-        for obs in obstacles:
+        for i, obs in enumerate(obstacles):
             ax.add_patch(plt.Circle((obs.x, obs.y), radius=obs.R, fc="k", alpha=0.5))
+            ax.text(obs.x, obs.y, str(i+1),bbox={"boxstyle" : "circle", "color":"grey"},ha="center",va="center")
     ax.set_aspect('equal', adjustable='box')
     time_text.set_text("")
     plt.plot(x[:,0],x[:,1], linemap, label=label)
@@ -188,9 +200,11 @@ def plot_1_set(x, obstacles, target, label='', linemap_traj = 'b', linemap_set='
     ax.add_patch(goal)
     if len(obstacles) ==1:
         ax.add_patch(plt.Circle((obstacles[0].x, obstacles[0].y), radius=obstacles[0].R, fc="k", alpha=0.5))
+        ax.text(obstacles[0].x, obstacles[0].y, "1",bbox={"boxstyle" : "circle", "color":"grey"},ha="center",va="center")
     else:
-        for obs in obstacles:
+        for i, obs in enumerate(obstacles):
             ax.add_patch(plt.Circle((obs.x, obs.y), radius=obs.R, fc="k", alpha=0.5))
+            ax.text(obs.x, obs.y, str(i+1),bbox={"boxstyle" : "circle", "color":"grey"},ha="center",va="center")
     ax.set_aspect('equal', adjustable='box')
     time_text.set_text("")
     x_traj = x[0]
@@ -208,9 +222,11 @@ def plot_1_multiset(x, x_set, obstacles, target, label='', linemap_traj = 'g:', 
     ax.add_patch(goal)
     if len(obstacles) ==1:
         ax.add_patch(plt.Circle((obstacles[0].x, obstacles[0].y), radius=obstacles[0].R, fc="k", alpha=0.5))
+        ax.text(obstacles[0].x, obstacles[0].y, "1",bbox={"boxstyle" : "circle", "color":"grey"},ha="center",va="center")
     else:
-        for obs in obstacles:
+        for i, obs in enumerate(obstacles):
             ax.add_patch(plt.Circle((obs.x, obs.y), radius=obs.R, fc="k", alpha=0.5))
+            ax.text(obs.x, obs.y, str(i+1),bbox={"boxstyle" : "circle", "color":"grey"},ha="center",va="center")
     ax.set_aspect('equal', adjustable='box')
     time_text.set_text("")
     for i, X in enumerate(x):
