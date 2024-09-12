@@ -192,7 +192,7 @@ def plot_1_traj(x, obstacles, target, label='', linemap = 'k:'):
     plt.legend()
     plt.show()
 
-def plot_1_set(x, obstacles, target, label='', linemap_traj = 'b', linemap_set='r:'):
+def plot_1_set(x, obstacles, target, label='', linemap_traj = 'b', linemap_set='r:', traj_alpha = 0.5):
     fig = plt.figure()
     ax = plt.axes(xlim=(-2, 15), ylim=(-2, 15))
     goal = plt.Rectangle((target[0]-0.5,target[1]-0.5),1,1,fc="g", alpha=0.7) 
@@ -208,9 +208,9 @@ def plot_1_set(x, obstacles, target, label='', linemap_traj = 'b', linemap_set='
     ax.set_aspect('equal', adjustable='box')
     time_text.set_text("")
     x_traj = x[0]
-    plt.plot(x_traj[:,0],x_traj[:,1], linemap_traj, label=label)
+    plt.plot(x_traj[:,0],x_traj[:,1], linemap_traj, label=label, alpha=traj_alpha)
     for x_set in x[1:]:
-        plt.plot(x_set[:,0],x_set[:,1], linemap_set, label='_nolegend_')
+        plt.plot(x_set[:,0],x_set[:,1], linemap_set, label='_nolegend_', alpha=traj_alpha)
     plt.legend()
     plt.show()
 
@@ -235,6 +235,43 @@ def plot_1_multiset(x, x_set, obstacles, target, label='', linemap_traj = 'g:', 
             plt.plot(Xs[:,0],Xs[:,1], linemap_set, label='_nolegend_')
     plt.legend()
     plt.show()
+
+def check_collision(x, obs_set):
+    collision = False
+    for x_ in x:
+        for obs in obs_set:
+            d = np.linalg.norm(x_[:2] - np.array([obs.x, obs.y]))
+            if d < obs.R:
+                collision = True
+    return collision
+
+def plot_tested_model(xs_set, obstacles, target):
+    num_col = 0
+    fig = plt.figure()
+    ax = plt.axes(xlim=(-2, 15), ylim=(-2, 15))
+    goal = plt.Rectangle((target[0]-0.5,target[1]-0.5),1,1,fc="g", alpha=0.7) 
+    time_text = ax.text(0.02, 0.95, "", transform=ax.transAxes)
+    ax.add_patch(goal)
+    if len(obstacles) ==1:
+        ax.add_patch(plt.Circle((obstacles[0].x, obstacles[0].y), radius=obstacles[0].R, fc="k", alpha=0.5))
+        ax.text(obstacles[0].x, obstacles[0].y, "1",bbox={"boxstyle" : "circle", "color":"grey"},ha="center",va="center")
+    else:
+        for i, obs in enumerate(obstacles):
+            ax.add_patch(plt.Circle((obs.x, obs.y), radius=obs.R, fc="k", alpha=0.5))
+            ax.text(obs.x, obs.y, str(i+1),bbox={"boxstyle" : "circle", "color":"grey"},ha="center",va="center")
+    ax.set_aspect('equal', adjustable='box')
+    time_text.set_text("")
+    for xs in xs_set:
+        col = check_collision(xs, obstacles)
+        if col:
+            color = 'r'
+            num_col += 1
+        else:
+            color = 'b'
+        plt.plot(xs[:,0],xs[:,1], color=color, alpha=0.3)
+    plt.show()
+    return num_col
+        
 
 def distributions(cost_set, x_set, u_set, w_run, w_term, dt):
     P = np.zeros(len(x_set))
