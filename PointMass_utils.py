@@ -93,8 +93,8 @@ class Costs():
     def cum_feat(self, x, u, dt):
         cum_f = np.zeros(self.nr)
         for X, U in zip(x[:-1],u):
-            cum_f += self.residuals(X,U)*dt
-        cum_f += self.residuals(x[-1], None)
+            cum_f += 0.5*(self.residuals(X,U)**2)
+        cum_f += 0.5*(self.residuals(x[-1], None)**2)
         return cum_f
     
     def traj_cost(self, x, u, w_run, w_term, dt):
@@ -116,10 +116,12 @@ def animatePointMass(xs, obstacles, target, sleep=50, show=False):
     obs_set = []
     if len(obstacles) ==1:
         ax.add_patch(plt.Circle((obstacles[0].x, obstacles[0].y), radius=obstacles[0].R, fc="k", alpha=0.5))
+        obs_set.append(plt.Circle((obstacles[0].x, obstacles[0].y), radius=obstacles[0].R, fc="k", alpha=0.5))
         ax.text(obstacles[0].x, obstacles[0].y, "1",bbox={"boxstyle" : "circle", "color":"grey"},ha="center",va="center")
     else:
         for i, obs in enumerate(obstacles):
             ax.add_patch(plt.Circle((obs.x, obs.y), radius=obs.R, fc="k", alpha=0.5))
+            obs_set.append(plt.Circle((obs.x, obs.y), radius=obs.R, fc="k", alpha=0.5))
             ax.text(obs.x, obs.y, str(i+1),bbox={"boxstyle" : "circle", "color":"grey"},ha="center",va="center")
 
     goal = plt.Rectangle((target[0]-0.5,target[1]-0.5),1,1,fc="g", alpha=0.7) 
@@ -148,6 +150,66 @@ def animatePointMass(xs, obstacles, target, sleep=50, show=False):
     print("... processing done")
     if show:
         plt.show()
+    return anim
+
+def animateTraj(xs_opt, xs_set, obstacles, target, sleep=1000, animType=1):
+    print("processing the animation ... ")
+    fig = plt.figure()
+    ax = plt.axes(xlim=(-2, 12), ylim=(-2, 12))
+    obs_set = []
+    if len(obstacles) ==1:
+        ax.add_patch(plt.Circle((obstacles[0].x, obstacles[0].y), radius=obstacles[0].R, fc="k", alpha=0.5))
+        obs_set.append(plt.Circle((obstacles[0].x, obstacles[0].y), radius=obstacles[0].R, fc="k", alpha=0.5))
+        ax.text(obstacles[0].x, obstacles[0].y, "1",bbox={"boxstyle" : "circle", "color":"grey"},ha="center",va="center")
+    else:
+        for i, obs in enumerate(obstacles):
+            ax.add_patch(plt.Circle((obs.x, obs.y), radius=obs.R, fc="k", alpha=0.5))
+            obs_set.append(plt.Circle((obs.x, obs.y), radius=obs.R, fc="k", alpha=0.5))
+            ax.text(obs.x, obs.y, str(i+1),bbox={"boxstyle" : "circle", "color":"grey"},ha="center",va="center")
+
+    goal = plt.Rectangle((target[0]-0.5,target[1]-0.5),1,1,fc="g", alpha=0.7) 
+    time_text = ax.text(0.02, 0.95, "", transform=ax.transAxes)
+
+    def init():
+        ax.add_patch(goal)
+        for obs in obs_set:
+            ax.add_patch(obs)
+        ax.set_aspect('equal', adjustable='box')
+        time_text.set_text("")
+        ax.plot(xs_opt[:,0],xs_opt[:,1],'g:')
+        return ax, time_text
+
+    def animate1(i):
+        ax.cla()
+        init()
+        X = xs_set[:i]
+        alpha_value = 1
+        for x_ in X:
+            ax.plot(x_[:,0], x_[:,1],color='r',alpha=(0.4*alpha_value/(len(X))))
+            alpha_value += 1
+        time = i * sleep / 1000.0
+        time_text.set_text(f"time = {time:.1f} sec")
+        return ax, time_text
+
+    def animate2(i):
+        ax.cla()
+        init()
+        X = xs_set[i]
+        ax.plot(X[:,0], X[:,1],color='r',alpha=(0.5))
+        time = i * sleep / 1000.0
+        time_text.set_text(f"time = {time:.1f} sec")
+        return ax, time_text
+        
+    if animType == 1:
+        anim = animation.FuncAnimation(
+            fig, animate1, init_func=init, frames=len(xs_set), interval=sleep, blit=False
+        )
+    elif animType == 2:
+        anim = animation.FuncAnimation(
+            fig, animate2, init_func=init, frames=len(xs_set), interval=sleep, blit=False
+        )
+        
+    print("... processing done")
     return anim
 
 def plot_results(x_opt, x_nopt, x_irl, obstacles, target):

@@ -32,7 +32,6 @@ class DifferentialActionModelPointMass(crocoddyl.DifferentialActionModelAbstract
         data.xout = np.matrix([Xddot, Yddot]).T
         data.r = self.cost_model.residuals(x, u) 
         data.cost = 0.5 * np.sum(self.costWeights * np.asarray(data.r) ** 2)
-        # data.cost = np.sum(self.costWeights * np.asarray(data.r))
 
 
 def get_results_from_model(cost_set, x0, u0, T, w, dt, max_iter, with_callback = True):
@@ -85,4 +84,10 @@ def test_model_full(cost_set, obs_set, samples, xlims, ylims, T, w, dt, max_iter
 
     return xs, us
 
-
+def reset_weights(solver, w_run, w_term):
+    T = solver.problem.T
+    for i in range(T):
+        solver.problem.runningModels[i].differential.model.costWeights = w_run
+    solver.problem.terminalModel.differential.model.costWeights = w_term
+    solver.with_callbacks=False
+    return solver

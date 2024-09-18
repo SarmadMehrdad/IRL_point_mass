@@ -1,0 +1,21 @@
+35 iter:
+
+Optimal : 0
+
+(Set_size = 3)
+Lambda = 0.0, Beta = 0.0: 22
+Lambda = 0.1, Beta = 0.0: 7 (But really really bad)
+Lambda = 0.1, Beta = 0.1: 16
+Lambda = 0.0, Beta = 0.1: 21
+
+(Set_size = all)
+Lambda = 0.0, Beta = 0.0: 8
+Lambda = 0.1, Beta = 0.0: 9
+Lambda = 0.1, Beta = 0.1: 15
+Lambda = 0.0, Beta = 0.1: 13
+
+(Set_size = 4)
+Lambda = 0.0, Beta = 0.0: 6
+Lambda = 0.001, Beta = 0.0: 9
+Lambda = 0.001, Beta = 0.01: 8
+Lambda = 0.0, Beta = 0.01: 7
