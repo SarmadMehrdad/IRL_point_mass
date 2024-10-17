@@ -98,6 +98,29 @@ class Costs():
         cum_f += 0.5*(self.residuals(x[-1], None)**2)
         return cum_f
     
+    def cum_feat_chunks(self, x, u, dt, num = 1):
+        cum_fs = []
+        cum_f = np.zeros(self.nr)
+        L = len(x)
+        for i in range(num):
+            beg = int(i*(L-1)/num)
+            end = int((i+1)*(L-1)/num)
+            f = np.zeros(self.nr)
+            for X, U in zip(x[beg:end],u[beg:end]):
+                f += 0.5*(self.residuals(X,U)**2)
+            f += 0.5*(self.residuals(x[-1], None)**2)
+            cum_f += f
+            cum_fs.append(f)
+
+        return cum_f, cum_fs
+    
+    def cum_aug_feat(self, x, u, dt):
+        cum_f = np.zeros(2*self.nr)
+        for X, U in zip(x[:-1],u):
+            cum_f[:self.nr] += 0.5*(self.residuals(X,U)**2)*dt
+        cum_f[self.nr:] += 0.5*(self.residuals(x[-1], None)**2)
+        return cum_f
+    
     def traj_cost(self, x, u, w_run, w_term, dt):
         cost = 0
         for X, U in zip(x[:-1],u):
@@ -119,6 +142,45 @@ class Costs():
         cost += np.sum(w_term*f)
         return cost, cum_f
 
+    def traj_cost_and_feat_multiple(self, x, u, w_run, w_term, dt, num = 1):
+        cost = 0
+        costs = []
+        L = len(x)
+        dec = int((L-1)/num)
+        cum_f = np.zeros(self.nr)
+        res = self.residuals(x[-1],None)**2
+        f = 0.5*(res)
+        cum_f += f
+        cost += np.sum(w_term*f)
+        c = 1
+        if np.mod(c,dec) == 0:
+            costs.append(cost.copy())
+        for t in range(L-2,0,-1):
+            res = self.residuals(x[t],u[t])**2
+            f = 0.5*(res)
+            cum_f += f
+            c += 1
+            cost += np.sum(w_run*f)*dt
+            if np.mod(c,dec) == 0:
+                costs.append(cost.copy())
+            
+        
+        return cost, cum_f, costs
+    
+    def traj_cost_and_aug_feat(self, x, u, w_run, w_term, dt):
+        cost = 0
+        cum_f = np.zeros(2*self.nr)
+        for X, U in zip(x[:-1],u):
+            res = self.residuals(X,U)**2
+            f = 0.5*(res)
+            cum_f[:self.nr] += f*dt
+            cost += np.sum(w_run*f)*dt
+        res = self.residuals(x[-1],None)**2
+        f = 0.5*(res)
+        cum_f[self.nr:] += f
+        cost += np.sum(w_term*f)
+        return cost, cum_f
+
     def traj_cost_and_feat_modified(self, x, u, w_run, w_term, dt, mean=None, cov_inv_sqrt=None):
         if cov_inv_sqrt is None:
             cov_inv_sqrt = np.eye(self.nr)
@@ -136,6 +198,27 @@ class Costs():
         res_mod = res[:,None] - mean[:,None]; res_mod = cov_inv_sqrt @ res_mod; res_mod += mean[:,None]
         f = 0.5*(np.squeeze(res_mod))
         cum_f += f
+        cost += np.sum(w_term*f)
+        return cost, cum_f
+    
+    def traj_cost_and_aug_feat_modified(self, x, u, w_run, w_term, dt, mean=None, cov_inv_sqrt=None):
+        if cov_inv_sqrt is None:
+            cov_inv_sqrt = np.eye(2*self.nr)
+        if mean is None:
+            mean = np.zeros(2*self.nr)
+        cost = 0
+        cum_f = np.zeros(2*self.nr, None)
+        for X, U in zip(x[:-1],u):
+            res = self.residuals(X,U)**2
+            res_mod = res[:,None] - mean[:self.nr,None]#; res_mod = cov_inv_sqrt @ res_mod; res_mod += mean[:,None]
+            f = 0.5*(res_mod)
+            cum_f[:self.nr, None] += f
+            cost += np.sum(w_run*f)*dt
+        res = self.residuals(x[-1],None)
+        res_mod = res[:,None] - mean[self.nr:,None]#; res_mod = cov_inv_sqrt @ res_mod; res_mod += mean[:,None]
+        f = 0.5*(res_mod)
+        cum_f[self.nr:,None] += f
+        cum_f = cov_inv_sqrt @ cum_f[:, None]; cum_f += mean[:,None]; cum_f = np.squeeze(cum_f)
         cost += np.sum(w_term*f)
         return cost, cum_f
 

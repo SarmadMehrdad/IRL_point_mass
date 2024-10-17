@@ -34,21 +34,21 @@ class DifferentialActionModelPointMass(crocoddyl.DifferentialActionModelAbstract
         data.cost = 0.5 * np.sum(self.costWeights * np.asarray(data.r) ** 2)
 
 
-def get_results_from_model(cost_set, x0, u0, T, w, dt, max_iter, with_callback = True):
+def get_results_from_model(cost_set, xs_init, us_init, T, w, dt, max_iter, with_callback = True):
     PM_DAM_running = DifferentialActionModelPointMass(cost_set, w[:cost_set.nr])
     PM_DAM_terminal = DifferentialActionModelPointMass(cost_set, w[cost_set.nr:])
     PM_ND_R = crocoddyl.DifferentialActionModelNumDiff(PM_DAM_running, False)
     PM_ND_T = crocoddyl.DifferentialActionModelNumDiff(PM_DAM_terminal, False)
     PM_IAM = crocoddyl.IntegratedActionModelEuler(PM_ND_R, dt)
     PM_IAM_T = crocoddyl.IntegratedActionModelEuler(PM_ND_T, 0.0)
-    problem = crocoddyl.ShootingProblem(x0, [PM_IAM] * T, PM_IAM_T)
+    problem = crocoddyl.ShootingProblem(xs_init[0], [PM_IAM] * T, PM_IAM_T)
     # Creating the SQP solver
     sqp = mim_solvers.SolverSQP(problem)
     sqp.setCallbacks([crocoddyl.CallbackVerbose()])
     sqp.with_callbacks=with_callback
     sqp.termination_tolerance = 1e-5
-    xs_init = [x0 for i in range(T+1)]
-    us_init = [u0 for i in range(T)]
+    # xs_init = [x0 for i in range(T+1)]
+    # us_init = [u0 for i in range(T)]
 
     # Solving this problem
     done = sqp.solve(xs_init, us_init, max_iter)
@@ -69,12 +69,14 @@ def test_model_full(cost_set, obs_set, samples, xlims, ylims, T, w, dt, max_iter
             c += 1
             col = False
             x0 = np.array([x_, y_, 0.0, 0.0])
+            u0 = np.array([0.0, 0.0])
             for obs in obs_set:
                 if np.linalg.norm(x0[:2] - np.array([obs.x, obs.y])) < obs.R:
                     col = True
             if not col:
-                u0 = np.array([0.0, 0.0])
-                xs_, us_, _ = get_results_from_model(cost_set, x0, u0, T, w, dt, max_iter, with_callback = with_callback)
+                xs_init = [x0 for i in range(T+1)]
+                us_init = [u0 for i in range(T)]
+                xs_, us_, _ = get_results_from_model(cost_set, xs_init, us_init, T, w, dt, max_iter, with_callback = with_callback)
                 xs.append(xs_.copy())
                 us.append(us_.copy())
             else:
